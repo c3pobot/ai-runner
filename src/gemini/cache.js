@@ -18,32 +18,12 @@ const restoreCache = async()=>{
       }
       log.info(`ai history for ${POD_NAME} restored`)
       cache.ready = true
-      pruneCache()
     }else{
       setTimeout(restoreCache, 5000)
     }
   }catch(e){
     log.error(e)
     setTimeout(restoreCache, 5000)
-  }
-}
-const pruneCache = async()=>{
-  try{
-    let timeNow = Date.now()
-    for(let i in cache.user){
-      if(!cache.user[i]) continue;
-      if(cache.user[i].TTL < timeNow) delete cache.user[i]
-    }
-    for(let i in cache?.message){
-      if(!cache?.message[i]) continue;
-      if(cache?.message[i].TTL < timeNow) delete cache.message[i]
-    }
-    await mongo.set('aiHistory', { _id: POD_NAME }, cache)
-    //log.debug(`${POD_NAME} ai history backed up...`)
-    setTimeout(pruneCache, CHECK_INTERVAL * 1000)
-  }catch(e){
-    log.error(e)
-    setTimeout(pruneCache, 5000)
   }
 }
 restoreCache()

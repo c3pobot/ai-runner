@@ -7,6 +7,23 @@ const { dataList } = require('./dataList')
 const discord = require('../discordMsg')
 let historyTTL = +(process.env.HISTORY_EXPIRE_TTL || 60), messageTTL = +(process.env.MESSAGE_EXPIRE_TTL || 60)
 
+
+const pruneCache = ()=>{
+  try{
+    let timeNow = Date.now()
+    for(let i in cache.user){
+      if(!cache.user[i]) continue;
+      if(cache.user[i].TTL < timeNow) delete cache.user[i]
+    }
+    for(let i in cache?.message){
+      if(!cache?.message[i]) continue;
+      if(cache?.message[i].TTL < timeNow) delete cache.message[i]
+    }
+    mongo.set('aiHistory', { _id: POD_NAME }, cache)
+  }catch(e){
+    log.error(e)
+  }
+}
 const getTTL = (seconds = 60)=>{
   return Date.now() + (seconds * 1000)
 }
@@ -172,6 +189,7 @@ module.exports.process = async(msg = {})=>{
   try{
     let content = await getMsgContent(msg)
     if(!content) return
+    pruneCache()
 
     if(content?.toLowerCase()?.startsWith('lets play a game') || content?.toLowerCase()?.startsWith("let's play a game") || content?.toLowerCase()?.startsWith("let play a game")){
       let status = await startGame(msg)
@@ -189,6 +207,7 @@ module.exports.process = async(msg = {})=>{
       await endStream(msg)
       return
     }
+
     let msgObj = getHistory(msg)
     if(!msgObj?.history) return
 
@@ -220,6 +239,7 @@ module.exports.process = async(msg = {})=>{
     msgObj.TTL = getTTL(historyTTL)
     cache[msgObj.type][msgObj.id] = JSON.parse(JSON.stringify(msgObj))
     cache.message[newMsg.id] = { id: msgObj.id, type: msgObj.type, TTL: getTTL(messageTTL) }
+
   }catch(e){
     log.error(e)
   }
