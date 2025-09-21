@@ -10,7 +10,9 @@ let historyTTL = 60, messageTTL = 30
 const getTTL = (seconds = 60)=>{
   return Date.now() + (seconds * 1000)
 }
-const ai = new GoogleGenAI({});
+const API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY
+
+const ai = new GoogleGenAI({ apiKey: API_KEY});
 
 const BOT_OWNER_ID = process.env.BOT_OWNER_ID
 
