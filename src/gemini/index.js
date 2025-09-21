@@ -7,9 +7,9 @@ const { cache } = require('./cache')
 const { dataList } = require('./dataList')
 const discord = require('../discordMsg')
 let historyTTL = +(process.env.HISTORY_EXPIRE_TTL || 60), messageTTL = +(process.env.MESSAGE_EXPIRE_TTL || 60)
+let POD_NAME = process.env.POD_NAME || 'ai-runner', CHECK_INTERVAL = 20
 
-
-const pruneCache = ()=>{
+const pruneCache = async()=>{
   try{
     let timeNow = Date.now()
     for(let i in cache.user){
@@ -20,7 +20,7 @@ const pruneCache = ()=>{
       if(!cache?.message[i]) continue;
       if(cache?.message[i].TTL < timeNow) delete cache.message[i]
     }
-    mongo.set('aiHistory', { _id: POD_NAME }, cache)
+    await mongo.set('aiHistory', { _id: POD_NAME }, cache)
   }catch(e){
     log.error(e)
   }
@@ -161,6 +161,7 @@ const endGame = async(msg = {})=>{
     delete cache.game[msg.chId]
     msg2send = 'Game ended..'
   }
+  await pruneCache()
   await discord.send({ chId: msg.chId }, { content: msg2send, message_reference: { message_id: msg.id } })
 }
 
@@ -173,6 +174,7 @@ const startStream = async(msg = {})=>{
       msg2send = 'Stream started.'
     }
   }
+  await pruneCache()
   await discord.send({ chId: msg.chId }, { content: msg2send, message_reference: { message_id: msg.id } })
 }
 const endStream = async(msg = {})=>{
@@ -184,13 +186,14 @@ const endStream = async(msg = {})=>{
       msg2send = 'Stream ended..'
     }
   }
+  await pruneCache()
   await discord.send({ chId: msg.chId }, { content: msg2send, message_reference: { message_id: msg.id } })
 }
 module.exports.process = async(msg = {})=>{
   try{
     let content = await getMsgContent(msg)
     if(!content) return
-    pruneCache()
+
 
     if(content?.toLowerCase()?.startsWith('lets play a game') || content?.toLowerCase()?.startsWith("let's play a game") || content?.toLowerCase()?.startsWith("let play a game")){
       let status = await startGame(msg)
@@ -240,7 +243,7 @@ module.exports.process = async(msg = {})=>{
     msgObj.TTL = getTTL(historyTTL)
     cache[msgObj.type][msgObj.id] = JSON.parse(JSON.stringify(msgObj))
     cache.message[newMsg.id] = { id: msgObj.id, type: msgObj.type, TTL: getTTL(messageTTL) }
-
+    await pruneCache();
   }catch(e){
     log.error(e)
   }
