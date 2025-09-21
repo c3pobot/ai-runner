@@ -1,4 +1,5 @@
 'use strict'
+const mongo = require('mongoclient')
 const log = require('logger')
 const { GoogleGenAI } = require("@google/genai")
 
