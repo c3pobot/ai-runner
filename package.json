@@ -1,0 +1,22 @@
+{
+  "name": "ai-runner",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "update": "chmod a+x updategitdependency.sh && ./updategitdependency.sh",
+    "build": "chmod a+x buildtestimage.sh && ./buildtestimage.sh c3pobot/ai-runner",
+    "prod": "chmod a+x buildprodimage.sh && ./buildprodimage.sh c3pobot/ai-runner"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/genai": "^1.20.0",
+    "async": "^3.2.6",
+    "logger": "github:c3pobot/logger",
+    "mongoclient": "github:c3pobot/mongoclient",
+    "node-fetch": "^2.6.7",
+    "rabbitmq-client": "^5.0.5"
+  }
+}
