@@ -5,7 +5,7 @@ const { GoogleGenAI } = require("@google/genai")
 const { cache } = require('./cache')
 const { dataList } = require('./dataList')
 const discord = require('../discordMsg')
-let historyTTL = 60, messageTTL = 30
+let historyTTL = +(process.env.HISTORY_EXPIRE_TTL || 60), messageTTL = +(process.env.MESSAGE_EXPIRE_TTL || 60)
 
 const getTTL = (seconds = 60)=>{
   return Date.now() + (seconds * 1000)
@@ -99,7 +99,6 @@ const getPrompt = (author, content, defendOthers, attackOthers, rudeUser)=>{
 const getMsgContent = async(msg = {})=>{
   let array = msg?.content?.split(' '), msg2send, tempMsg
   if(array?.length == 1 && !msg.reference){
-    console.log(dataList.botPingMsg)
     if(dataList?.botPingMsg) await discord.send({ chId: msg.chId }, { content: dataList?.botPingMsg, message_reference: { message_id: msg.id }})
     return
   }
