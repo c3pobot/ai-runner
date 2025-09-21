@@ -14,6 +14,12 @@ const ai = new GoogleGenAI({});
 
 const BOT_OWNER_ID = process.env.BOT_OWNER_ID
 
+const truncateString = (str, maxLength) => {
+  if (str.length > maxLength) {
+    return str.slice(0, maxLength - 3) + '...'; // -3 for the ellipsis
+  }
+  return str;
+}
 const getResponse = async( message, model )=>{
   try{
     if(!message) return
@@ -205,7 +211,7 @@ module.exports.process = async(msg = {})=>{
     swapNameForId(msg.userMentions, tempMsg, 'user')
     swapNameForId(msg.roleMentions, tempMsg, 'role')
 
-    let msg2send = { content: tempMsg.join(' '), message_reference: { message_id: msg.id } }
+    let msg2send = { content: truncateString(tempMsg.join(' '), 2000), message_reference: { message_id: msg.id } }
 
     let newMsg = await discord.send({ chId: msg.chId }, msg2send)
     if(!newMsg?.id) return
