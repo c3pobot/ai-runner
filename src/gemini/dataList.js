@@ -2,7 +2,8 @@
 const log = require('logger')
 const mongo = require('mongoclient')
 
-const dataList = { botPingMsg: null, botIDs: [], defend: new Set([]), rude: new Set([]), ready: false }
+const BOT_OWNER_ID = process.env.BOT_OWNER_ID
+const dataList = { botPingMsg: null, botIDs: [], defend: new Set([]), rude: new Set([]), ready: false, allowed: new Set([]) }
 
 const sync = async()=>{
   try{
@@ -16,6 +17,10 @@ const sync = async()=>{
         dataList.botPingMsg = botSettings?.botPingMsg
       }
       dataList.ready = true
+      let allowedIDs = await mongo.find('discordId', {}, { _id: 1, ai: 1 })
+      dataList.allowed = new Set(allowedIDs?.filter(x=>x?.ai)?.map(x=>x._id) || [])
+
+      if(BOT_OWNER_ID) dataList.allowed.add(BOT_OWNER_ID)
       setTimeout(sync, 10000)
     }else{
       setTimeout(sync, 2000)

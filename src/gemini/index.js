@@ -130,13 +130,15 @@ const getMsgContent = async(msg = {})=>{
   return array.join(' ')?.trim()
 }
 const getHistory = (msg = {})=>{
+  /*
   let obj = cache?.message[msg.reference?.messageId]
   if(obj?.type?.id){
     return cache[obj.type][obj.id] || { id: obj.id, type: obj.type, history: [] }
   }
+  */
   if(cache?.game[msg.chId]) return cache?.game[msg.chId] || { id: msg.chId, type: 'game', history: [] }
   if(cache?.channel[msg.chId]) return cache?.channel[msg.chId] || { id: msg.chId, type: 'channel', history: [] }
-  return cache?.user[`${msg.chId}-${msg.dId}`] || { id: `${msg.chId}-${msg.dId}`, type: 'user', history: [] }
+  return cache?.user[`${msg.sId}-${msg.dId}`] || { id: `${msg.sId}-${msg.dId}`, type: 'user', history: [] }
 }
 const pruneHistory = (msgObj = []) =>{
   let i = +(msgObj?.history.length || 0) - 5000
@@ -191,6 +193,8 @@ const endStream = async(msg = {})=>{
 }
 module.exports.process = async(msg = {})=>{
   try{
+    if(!dataList?.allowed?.has(msg.dId)) return;
+
     let content = await getMsgContent(msg)
     if(!content) return
 
@@ -242,7 +246,7 @@ module.exports.process = async(msg = {})=>{
 
     msgObj.TTL = getTTL(historyTTL)
     cache[msgObj.type][msgObj.id] = JSON.parse(JSON.stringify(msgObj))
-    cache.message[newMsg.id] = { id: msgObj.id, type: msgObj.type, TTL: getTTL(messageTTL) }
+    //cache.message[newMsg.id] = { id: msgObj.id, type: msgObj.type, TTL: getTTL(messageTTL) }
     await pruneCache();
   }catch(e){
     log.error(e)

@@ -1,6 +1,5 @@
 'use strict'
 const log = require('logger')
-const { dataList } = require('src/dataList')
 const { notify } = require('src/rabbitmq')
 const Cmds = {}
 Cmds['setLogLevel'] = (data = {})=>{
